@@ -1,9 +1,11 @@
 import express from 'express';
 import Expense from '../models/expense.models.js'
 import User from '../models/user.models.js';
+import auth from '../middleware/auth.middleware.js';
 // import auth from '../middleware/auth.middleware.js';
 
 const router = express.Router();
+router.use(auth);
 
 router.post('/create', async (req, res) => {
   try {
@@ -171,8 +173,9 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
+    console.log(req.query,req.params.id);
     const { email } = req.query;
-    const { expenseId } = req.params.id;
+    const expenseId  = req.params.id;
     if (!email) {
       return res.status(401).json({
         success: false,
@@ -187,11 +190,13 @@ router.delete('/:id', async (req, res) => {
         message: "user must exist for this operation!!"
       });
     }
-
+    console.log(expenseId);
+    console.log(user._id);
     const expenseToDelete = await Expense.findOneAndDelete({
       _id: expenseId,
       userId: user._id,
     });
+    console.log(expenseToDelete);
 
     if (!expenseToDelete) {
       return res.status(401).json({

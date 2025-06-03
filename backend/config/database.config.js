@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+// #region connectDb 
 
 const connectDb = async() =>{
   try {

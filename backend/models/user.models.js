@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 
+// #region userSchema
+
 const userSchema = mongoose.Schema(
   {
     username: {

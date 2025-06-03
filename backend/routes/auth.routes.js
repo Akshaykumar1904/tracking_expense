@@ -1,18 +1,32 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import User from '../models/user.models.js';
-
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
+// #region JwtToken
 
-/*
-Register user
-*/
+const generateUserToken = (userId)=>{
+  return jwt.sign(
+    {userId},
+    process.env.JWT_SECRET,
+    {expiresIn:'7d'}
+  );
+};
+ 
+//  #region RegisterUser
 
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
     console.log(req.body);
+
+    if(!email || !username || !password){
+      return res.status(400).json({
+        message:"username,password,email required!"
+      })
+    }
+
     const isUserExisting = await User.findOne({ email });
     if (isUserExisting) {
       return res.status(200).json({ message: "user already exists!!" })
@@ -30,9 +44,17 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
+    // generate new token
+    const token = generateUserToken(user._Id);
+
     res.status(201).json({
       message: "user is successfully created !",
-      userId: user._id,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
     });
 
 
@@ -40,6 +62,8 @@ router.post('/register', async (req, res) => {
     return res.status(501).json({ message: "Server error", error: error.message });
   }
 });
+
+// #region LoginUser
 
 
 router.post('/login', async (req, res) => {
@@ -64,10 +88,16 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: "invalid user credentials!" });
     }
 
+    const token = generateUserToken(user._id);
+
     res.status(200).json({
       message: "login successfull",
-      userId: user._id,
-      username: user.username
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email:user.email,
+      }
     });
 
   }catch (error) {
