@@ -2,20 +2,44 @@ import express from 'express';
 import Expense from '../models/expense.models.js'
 import User from '../models/user.models.js';
 import auth from '../middleware/auth.middleware.js';
-// import auth from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 router.use(auth);
 
+router.get('/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Expense routes are working!',
+    user: {
+      id: req.user._id,
+      username: req.user.username,
+      email: req.user.email
+    }
+  });
+});
+
+
+// #region createExpense
 router.post('/create', async (req, res) => {
+  console.log(req.body)
   try {
-    const { email, amount, description, date } = req.body;
+    console.log('here')
+    const {amount, description, date } = req.body;
+    const userId = req.user._id;
+
+    if(!userId){
+      return res.status(400).json({
+        success:false,
+        message:"UserId is required",
+      })
+    }
+    console.log(req.user._id);
     
     // INPUT VALIDATION
-    if (!email || !amount ) {
+    if (!description || !amount ) {
       return res.status(400).json({ 
         success: false,
-        message: "Email, amount, and category are required" 
+        message: "amount, and category are required" 
       });
     }
 
@@ -28,17 +52,17 @@ router.post('/create', async (req, res) => {
     }
 
     // FIND USER
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found" 
-      });
-    }
+    // const user = await User.findOne({ email });
+    // if (!user) {
+    //   return res.status(404).json({ 
+    //     success: false,
+    //     message: "User not found" 
+    //   });
+    // }
 
     // CREATE EXPENSE
     const expense = new Expense({
-      userId: user._id,
+      userId,
       amount: parseFloat(amount), // Ensure it's a number
       description: description || "", // Default to empty string if not provided
       date: date ? new Date(date) : new Date() // Ensure proper date format
@@ -53,6 +77,7 @@ router.post('/create', async (req, res) => {
     });
 
   } catch (error) {
+    console.log("direct here");
     console.error('Error creating expense:', error);
     return res.status(500).json({ 
       success: false,
@@ -62,34 +87,33 @@ router.post('/create', async (req, res) => {
   }
 });
 
+// #region allExpenses
 
 router.post('/allExpenses', async (req, res) => {
   try {
-    console.log("entering here ")
-    console.log(req.query);
-    const { email } = req.query;
-    if (!email) {
+    console.log(req.user._id);
+    const userId  = req.user._id;
+    if (!userId) {
       return res.status(400).json({
         success: false,
-        message: "invalid email"
+        message: "invalid userId"
       });
     }
-    console.log("done")
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid user"
-      })
-    }
+    // const user = await User.findOne({ _id:userId });
+    // if (!user) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     message: "Invalid user"
+    //   })
+    // }
     // console.log("done")
-    console.log(user);
-    console.log(user._id);
+    // console.log(user);
+    // console.log(user._id);
 
 
 
-    const userExpenses = await Expense.find({ userId: user._id })
+    const userExpenses = await Expense.find({userId })
       .sort({ date: -1 })
       .select('-__v');
 
@@ -99,9 +123,9 @@ router.post('/allExpenses', async (req, res) => {
       success: true,
       count: userExpenses.length,
       user: {
-        id: user._id,
-        username: user.username,
-        email: user.email
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email
       },
       data: userExpenses
     })
@@ -113,6 +137,8 @@ router.post('/allExpenses', async (req, res) => {
     });
   }
 });
+
+// #region updateExpense
 
 router.put('/:id', async (req, res) => {
   try {
@@ -169,6 +195,8 @@ router.put('/:id', async (req, res) => {
     });
   }
 });
+
+// #region deleteExpense
 
 
 router.delete('/:id', async (req, res) => {

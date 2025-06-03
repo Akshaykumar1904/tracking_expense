@@ -3,7 +3,7 @@ import User from '../models/user.models.js';
 
 const auth = async (req, res, next) => {
   try {
-    const authHeader = req.headers('Authorization');
+    const authHeader = req.headers['authorization'];
     if (!authHeader) {
       return res.status(400).json({
         success: false,
@@ -30,7 +30,7 @@ const auth = async (req, res, next) => {
     }
 
     //check for user
-    const user = await User.findOne(decodedToken.userId).select('-password');
+    const user = await User.findById(decodedToken.userId).select('-password');
     if (!user) {
       return res.status(400).json({
         success: false,
