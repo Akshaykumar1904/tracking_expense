@@ -1,6 +1,9 @@
 import express from 'express';
 import Expense from '../models/expense.models.js'
+/*
 import User from '../models/user.models.js';
+now we've used auth-middleware to get userId
+*/
 import auth from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -51,14 +54,16 @@ router.post('/create', async (req, res) => {
       });
     }
 
-    // FIND USER
-    // const user = await User.findOne({ email });
-    // if (!user) {
-    //   return res.status(404).json({ 
-    //     success: false,
-    //     message: "User not found" 
-    //   });
-    // }
+    /*
+    FIND USER
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
+      });
+    }
+    */
 
     // CREATE EXPENSE
     const expense = new Expense({
@@ -99,17 +104,18 @@ router.post('/allExpenses', async (req, res) => {
         message: "invalid userId"
       });
     }
-
-    // const user = await User.findOne({ _id:userId });
-    // if (!user) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: "Invalid user"
-    //   })
-    // }
-    // console.log("done")
-    // console.log(user);
-    // console.log(user._id);
+    /*
+    const user = await User.findOne({ _id:userId });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid user"
+      })
+    }
+    console.log("done")
+    console.log(user);
+    console.log(user._id);
+    */
 
 
 
@@ -163,7 +169,7 @@ router.put('/:id', async (req, res) => {
         message: "user is required"
       });
     }
-      */
+    */
      console.log(userId);
      console.log(expenseId);
 
@@ -182,7 +188,7 @@ router.put('/:id', async (req, res) => {
     console.log(expenseId);
     console.log(userId);
 
-/*
+   /*
     const updateExpense = await Expense.findByIdAndUpdate(
       expenseId,
       {
@@ -193,7 +199,7 @@ router.put('/:id', async (req, res) => {
       },
       { new: true, runValidators: true }
     );
-    */
+  */
     const updatedExpense = await Expense.findByIdAndUpdate(
       expenseId,
       {
@@ -238,13 +244,15 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    // const user = await User.findOne({ email });
-    // if (!user) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "user must exist for this operation!!"
-    //   });
-    // }
+    /*
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "user must exist for this operation!!"
+      });
+    }
+      */
     console.log(expenseId);
     console.log(userId);
     const expenseToDelete = await Expense.findOneAndDelete({
