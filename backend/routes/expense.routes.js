@@ -143,16 +143,19 @@ router.post('/allExpenses', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     console.log(req.body);
-    const { email, amount, description, date } = req.body;
+    const {amount, description, date } = req.body;
     const expenseId = req.params.id;
+    const userId = req.user._id;
+    console.log(amount,description,date);
 
-    if (!email) {
+    if (!expenseId || !userId) {
       return res.status(401).json({
         success: false,
-        message: "Email is required"
+        message: "expense & user are required"
       });
     }
 
+    /*
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({
@@ -160,11 +163,15 @@ router.put('/:id', async (req, res) => {
         message: "user is required"
       });
     }
+      */
+     console.log(userId);
+     console.log(expenseId);
 
-    const currentExpense = await Expense.find({
-      _id: expenseId,
-      userId: user._id
+    const currentExpense = await Expense.findOne({
+      _id: expenseId, 
+      userId: userId 
     });
+    console.log(currentExpense);
 
     if (!currentExpense) {
       return res.status(400).json({
@@ -172,21 +179,41 @@ router.put('/:id', async (req, res) => {
         message: "Expense not available or you dont have permission to update"
       });
     }
+    console.log(expenseId);
+    console.log(userId);
 
+/*
     const updateExpense = await Expense.findByIdAndUpdate(
       expenseId,
       {
         amount: amount || currentExpense.amount,
         description: description || currentExpense.description,
-        date: date || currentExpense.date
+        date: date || currentExpense.date,
+        updatedAt:new Date()
       },
       { new: true, runValidators: true }
     );
+    */
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      expenseId,
+      {
+        amount:  amount || currentExpense.amount ,
+        // category: category || currentExpense.category,
+        description: description || currentExpense.description,
+        date: date || currentExpense.date,
+        // updatedAt: new Date()
+      },
+      { new: true, runValidators: true }
+    );
+
+    console.log(updatedExpense);
+    // await updateExpense.save();
     return res.status(201).json({
       success: true,
       message: "expense updated",
-      data: updateExpense
+      data: updatedExpense
     })
+    // console.log(data);
 
   } catch (error) {
     return res.status(500).json({
@@ -201,28 +228,28 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    console.log(req.query,req.params.id);
-    const { email } = req.query;
+    // console.log(req.params.id);
+    const userId  = req.user._id;
     const expenseId  = req.params.id;
-    if (!email) {
+    if (!userId || !expenseId) {
       return res.status(401).json({
         success: false,
-        message: "Email required!"
+        message: "user and expense required!"
       });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "user must exist for this operation!!"
-      });
-    }
+    // const user = await User.findOne({ email });
+    // if (!user) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "user must exist for this operation!!"
+    //   });
+    // }
     console.log(expenseId);
-    console.log(user._id);
+    console.log(userId);
     const expenseToDelete = await Expense.findOneAndDelete({
       _id: expenseId,
-      userId: user._id,
+      userId: userId,
     });
     console.log(expenseToDelete);
 
